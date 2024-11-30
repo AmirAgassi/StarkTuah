@@ -248,19 +248,13 @@ export default function SwapInterface() {
   const handleSwapAction = async () => {
     if (!isSelling && amount) {
       sendMintTuah();
-      setToastMessage("Minting USDTuah...");
-      setShowToast(true);
     } else if (isSelling && amount) {
       sendBurnTuah();
-      setToastMessage("Burning USDTuah...");
-      setShowToast(true);
     }
   };
 
   const handleMintUSDC = () => {
     sendMintUSDC();
-    setToastMessage("Minting USDC...");
-    setShowToast(true);
   };
 
   return (
