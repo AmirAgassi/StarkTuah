@@ -31,15 +31,13 @@ mod TuahToken {
     #[constructor]
     fn constructor(
         ref self: ContractState,
-        initial_supply: u256,
         recipient: ContractAddress,
         usdc_address: ContractAddress
     ) {
-       let name = "Stark Tuah";
-        let symbol = "USDTuah";
+        let name = "Stark Tuah";
+        let symbol = "STUAH";
 
         self.erc20.initializer(name, symbol);
-        self.erc20.mint(recipient, initial_supply);
         self.usdc_address.write(usdc_address);
         self.owner.write(get_caller_address());
     }
