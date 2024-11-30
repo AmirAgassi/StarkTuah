@@ -6,48 +6,57 @@ import torch.nn as nn
 import torch.onnx
 from sklearn.preprocessing import MinMaxScaler
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
+import json
 
+# Load environment variables
 load_dotenv()
+coin_apikey = os.getenv('COINMARKETCAP')
 
-#date range
-time_end = datetime.utcnow()
+# Date range
+time_end = datetime.now(timezone.utc)
 time_start = time_end - timedelta(days=7)
 
-# Fetch data from pro market cap
-def fetch_historical_data(COINMARKETCAP, symbol="BTC", days=100):
-    url = f"https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/historical"
-    headers = {"X-CMC_PRO_API_KEY": COINMARKETCAP}
+# Fetch data from CoinMarketCap API
+def fetch_historical_data(COINMARKETCAP, symbol="BTC,ETH,BNB"):
+    url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/historical"
+    headers = {
+        'Accepts': 'application/json',
+        'X-CMC_PRO_API_KEY': COINMARKETCAP,
+    }
     params = {
-    "symbol": "BTC,ETH,BNB",  # bit coin, eth, 
-    "time_start": time_start.isoformat(),
-    "time_end": time_end.isoformat(),
-    "interval": "1h", 
-    "convert": "USD"
+        "symbol": symbol,
+        "time_start": time_start.isoformat(),
+        "time_end": time_end.isoformat(),
+        "interval": "1h", 
+        "convert": "USD"
     }
     
-    response = requests.get(url, headers=headers, params=params)
-    data = response.json()
+    try:
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()  # This will raise an HTTPError for bad responses (4xx, 5xx)
+        data = response.json()
+        
+        # Check if the API response is valid
+        if response.status_code == 200 and "data" in data and "quotes" in data["data"]:
+            prices = [entry["quote"]["USD"]["price"] for entry in data["data"]["quotes"]]
+            dates = [entry["timestamp"] for entry in data["data"]["quotes"]]
+            return pd.DataFrame({"Date": pd.to_datetime(dates, unit='s'), "Price": prices})
+        else:
+            raise Exception(f"Error: {data.get('status', {}).get('error_message', 'Unknown error')}")
     
-    if response.status_code == 200:
-        prices = [entry["quote"]["USD"]["price"] for entry in data["data"]["quotes"]]
-        dates = [entry["timestamp"] for entry in data["data"]["quotes"]]
-        return pd.DataFrame({"Date": dates, "Price": prices})
-    else:
-        raise Exception(f"Error: {data['status']['error_message']}")
-
-# Key
-COINMARKETCAP = "os.getenv('COINMARKETCAP')"
+    except requests.exceptions.RequestException as e:
+        raise SystemExit(f"Request failed: {e}")
 
 # Fetch historical price data
 try:
-    df = fetch_historical_data(COINMARKETCAP)
+    df = fetch_historical_data(coin_apikey, symbol="BTC,ETH,BNB")
     print(df.head())
 except Exception as e:
     print(str(e))
 
-# Process data
+# Preprocess the data
 scaler = MinMaxScaler(feature_range=(0, 1))
 scaled_prices = scaler.fit_transform(df["Price"].values.reshape(-1, 1))
 
@@ -66,7 +75,7 @@ X, y = create_sequences(scaled_prices, seq_length)
 X = torch.tensor(X, dtype=torch.float32)
 y = torch.tensor(y, dtype=torch.float32)
 
-# Define and Train an LSTM Model
+# Define and train an LSTM Model
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(LSTMModel, self).__init__()
@@ -93,7 +102,7 @@ for epoch in range(epochs):
     if (epoch + 1) % 10 == 0:
         print(f"Epoch {epoch+1}/{epochs}, Loss: {loss.item()}")
 
-# Export the Model to ONNX
+# Export the model to ONNX
 onnx_path = "price_prediction.onnx"
 dummy_input = torch.randn(1, seq_length, 1)  # Shape: (batch_size, seq_length, input_size)
 torch.onnx.export(model, dummy_input, onnx_path, input_names=["input"], output_names=["output"])
