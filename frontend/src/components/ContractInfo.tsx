@@ -2,7 +2,7 @@ import { useReadContract } from "@starknet-react/core";
 import { useState, useEffect } from "react";
 import type { Abi } from "starknet";
 export const CONTRACT_ADDRESS =
-  "0x0771c943ac94b6778c0d7f8cbe1aa12962161cd40bcc37e8d5c45bb54625ce78";
+  "0x031a613005b96286881925cc4589062881b064ede1f48b96b666e40ffad68b68";
 
 // abi for total supply and decimals query
 export const ABI = [
