@@ -8,9 +8,9 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <div className="container mx-auto px-6 pt-20">
+      <div className="container mx-auto px-6 pt-16">
         {/* main content area with tabs */}
-        <div className="flex min-h-[calc(100vh-5rem)]">
+        <div className="flex min-h-[calc(100vh)]">
           {/* vertical tab navigation */}
           <div className="w-48 relative">
             <div className="absolute inset-y-0 right-0 w-[1px] bg-gray-800/50"></div>
@@ -53,7 +53,10 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* tab content */}
-          <div className="flex-1 pl-8">
+          <div className="flex-1 pl-8"
+          style={{
+            background: 'radial-gradient(circle at bottom, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0))',
+          }}>
             {activeTab === 'swap' && (
               <div>
                 <SwapInterface />
