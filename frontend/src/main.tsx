@@ -1,3 +1,4 @@
+import "./index.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { InjectedConnector } from "starknetkit/injected";
@@ -5,6 +6,7 @@ import { ArgentMobileConnector } from "starknetkit/argentMobile";
 import { WebWalletConnector } from "starknetkit/webwallet";
 import { mainnet, sepolia } from "@starknet-react/chains";
 import { Connector, StarknetConfig, publicProvider } from "@starknet-react/core";
+import App from "./App.tsx";
 
 const chains = [mainnet, sepolia];
 const connectors = [
@@ -13,8 +15,6 @@ const connectors = [
   new WebWalletConnector({ url: "https://web.argent.xyz" }),
   new ArgentMobileConnector(),
 ];
-import "./index.css";
-import App from "./App.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

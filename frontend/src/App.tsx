@@ -1,20 +1,11 @@
-import { useAccount, useConnect } from "@starknet-react/core";
+import Navbar from "./components/navbar";
 
 export default function Home() {
-  const { connect, connectors } = useConnect();
-  const { address } = useAccount();
-
   return (
-    <div>
-      <div>Connect Wallet</div>
-
-      {connectors.map((connector) => (
-        <button onClick={() => connect({ connector })}>
-          Connect {connector.id}
-        </button>
-      ))}
-
-      <p>{address}</p>
+    <div className="min-h-screen bg-gray-100">
+      <Navbar />
+      <main className="container mx-auto px-6">
+      </main>
     </div>
   );
 }
