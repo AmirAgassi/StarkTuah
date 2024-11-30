@@ -8,7 +8,7 @@ const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('swap');
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gray-900 text-white mt-6">
       <div className="container mx-auto px-6 pt-16">
         {/* main content area with tabs */}
         <div className="flex min-h-[calc(100vh)]" style={{
