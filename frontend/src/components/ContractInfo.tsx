@@ -114,6 +114,18 @@ export default function ContractInfo() {
     args: [],
     address: CONTRACT_ADDRESS,
     abi: ABI,
+    watch: true,
+  });
+
+  const { data: allowanceData } = useReadContract({
+    functionName: "allowance",
+    args: [
+      CONTRACT_ADDRESS,
+      USDC_ADDRESS,
+    ],
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    watch: true,
   });
 
   useEffect(() => {
@@ -140,6 +152,7 @@ export default function ContractInfo() {
       <div className="text-[#7f8596]">
         <p>Contract Address: {CONTRACT_ADDRESS}</p>
         <p>Total Supply: {totalSupply ?? "Loading..."} tokens</p>
+        <p>Allowance: {allowanceData?.remaining?.toString() ?? "Loading..."}</p>
       </div>
     </div>
   );
