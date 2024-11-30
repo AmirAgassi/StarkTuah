@@ -5,6 +5,7 @@ import {
   useReadContract,
   useSendTransaction,
   useContract,
+  useTransactionReceipt,
 } from "@starknet-react/core";
 import { Transition } from "@headlessui/react";
 import { Fragment } from "react";
@@ -148,6 +149,7 @@ export default function SwapInterface() {
   const usdcContract = useContract({ address: USDC_ADDRESS, abi: ABI });
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [txHash, setTxHash] = useState<string | undefined>();
 
   const { data: tuahBalanceData } = useReadContract({
     functionName: "balance_of",
@@ -190,6 +192,9 @@ export default function SwapInterface() {
             ]),
           ]
         : undefined,
+    onSuccess: (tx) => {
+      setTxHash(tx.transaction_hash);
+    },
   });
 
   const { send: sendMintUSDC, error: errorMintUSDC } = useSendTransaction({
@@ -197,6 +202,9 @@ export default function SwapInterface() {
       usdcContract?.contract && address
         ? [usdcContract.contract.populate("mint", [100n * 10n ** 18n])]
         : undefined,
+    onSuccess: (tx) => {
+      setTxHash(tx.transaction_hash);
+    },
   });
 
   const { send: sendMintTuah, error: errorMintTuah } = useSendTransaction({
@@ -208,6 +216,9 @@ export default function SwapInterface() {
             ]),
           ]
         : undefined,
+    onSuccess: (tx) => {
+      setTxHash(tx.transaction_hash);
+    },
   });
 
   const { send: sendBurnTuah, error: errorBurnTuah } = useSendTransaction({
@@ -219,7 +230,12 @@ export default function SwapInterface() {
             ]),
           ]
         : undefined,
+    onSuccess: (tx) => {
+      setTxHash(tx.transaction_hash);
+    },
   });
+
+  const { data: txReceipt } = useTransactionReceipt({ hash: txHash });
 
   useEffect(() => {
     if (tuahBalanceData && decimalsData) {
@@ -263,17 +279,20 @@ export default function SwapInterface() {
   };
 
   useEffect(() => {
-    if (allowanceData || usdcBalanceData || tuahBalanceData) {
-      setShowToast(true)
+    if (txReceipt) {
+      setShowToast(true);
+      setToastMessage("Transaction Success!");
       
-      // Hide toast after 3 seconds
+      // Reset hash after showing toast
+      setTxHash(undefined);
+      
       const timer = setTimeout(() => {
-        setShowToast(false)
-      }, 3000)
+        setShowToast(false);
+      }, 3000);
 
-      return () => clearTimeout(timer)
+      return () => clearTimeout(timer);
     }
-  }, [allowanceData, usdcBalanceData, tuahBalanceData])
+  }, [txReceipt]);
 
   return (
     <>
