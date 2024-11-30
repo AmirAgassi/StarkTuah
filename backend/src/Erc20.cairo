@@ -36,5 +36,16 @@ mod Erc20 {
         self.erc20.initializer(name, symbol);
         self.erc20.mint(recipient, initial_supply);
     }
+
+    #[external(v0)]
+    fn mint(ref self: ContractState, amount: u256) {        
+        self.erc20.mint(get_caller_address(), amount);
+    }
+
+    #[external(v0)]
+    fn burn(ref self: ContractState, amount: u256) {        
+        self.erc20.burn(get_caller_address(), amount);
+    }
+
 }
 
