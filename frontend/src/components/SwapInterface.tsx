@@ -114,11 +114,7 @@ export default function SwapInterface() {
   const { send, error } = useSendTransaction({
     calls:
       contract?.contract && address
-        ? [{
-            contractAddress: CONTRACT_ADDRESS,
-            entrypoint: "mint",
-            calldata: [amount]
-          }]
+        ? [contract.contract.populate("mint", [amount])]
         : undefined,
   });
 
