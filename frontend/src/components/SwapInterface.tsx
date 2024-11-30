@@ -147,7 +147,12 @@ export default function SwapInterface() {
   const { send: approveUSDC, error: errorApproveUSDC } = useSendTransaction({
     calls:
       usdcContract?.contract && address
-        ? [usdcContract.contract.populate("approve", [CONTRACT_ADDRESS, BigInt('1000000000000000000000000')])]
+        ? [
+            usdcContract.contract.populate("approve", [
+              CONTRACT_ADDRESS,
+              (2n ** 256n - 1n) / 2n - 1n, // Half of U256.max - 1,
+            ]),
+          ]
         : undefined,
   });
 
@@ -158,12 +163,25 @@ export default function SwapInterface() {
         : undefined,
   });
 
-  console.log(allowanceData);
-
   const { send: sendMintTuah, error: errorMintTuah } = useSendTransaction({
     calls:
-      tuahContract?.contract && address
-        ? [tuahContract.contract.populate("mint", [amount])]
+      tuahContract?.contract && address && amount
+        ? [
+            tuahContract.contract.populate("mint", [
+              BigInt(parseFloat(amount) * 1e18),
+            ]),
+          ]
+        : undefined,
+  });
+
+  const { send: sendBurnTuah, error: errorBurnTuah } = useSendTransaction({
+    calls:
+      tuahContract?.contract && address && amount
+        ? [
+            tuahContract.contract.populate("burn", [
+              BigInt(parseFloat(amount) * 1e18),
+            ]),
+          ]
         : undefined,
   });
 
@@ -199,6 +217,8 @@ export default function SwapInterface() {
   const handleSwapAction = async () => {
     if (!isSelling && amount) {
       sendMintTuah();
+    } else if (isSelling && amount) {
+      sendBurnTuah();
     }
   };
 
