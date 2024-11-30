@@ -56,26 +56,6 @@
       "state_mutability": "external"
     },
     {
-      "name": "swap_usdc_for_eth",
-      "type": "function",
-      "inputs": [
-        {
-          "name": "ekubo_pool",
-          "type": "core::starknet::contract_address::ContractAddress"
-        },
-        {
-          "name": "amount_in",
-          "type": "core::integer::u256"
-        },
-        {
-          "name": "min_amount_out",
-          "type": "core::integer::u256"
-        }
-      ],
-      "outputs": [],
-      "state_mutability": "external"
-    },
-    {
       "name": "name",
       "type": "function",
       "inputs": [],
