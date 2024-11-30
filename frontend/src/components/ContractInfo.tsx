@@ -1,4 +1,4 @@
-import { useContract, useProvider } from "@starknet-react/core";
+import { useReadContract } from "@starknet-react/core";
 import { useState, useEffect } from "react";
 
 export const CONTRACT_ADDRESS = "0x0771c943ac94b6778c0d7f8cbe1aa12962161cd40bcc37e8d5c45bb54625ce78";
@@ -95,42 +95,34 @@ export const ABI = [
 
 export default function ContractInfo() {
   const [totalSupply, setTotalSupply] = useState<string | null>(null);
-  const [decimals, setDecimals] = useState<number>(18); // default to 18
-  const provider = useProvider();
-  const { contract } = useContract({
-    abi: ABI,
+
+  const { data: decimalsData } = useReadContract({
+    functionName: "decimals",
+    args: [],
     address: CONTRACT_ADDRESS,
+    abi: ABI
+  });
+
+  const { data: supplyData } = useReadContract({
+    functionName: "total_supply",
+    args: [],
+    address: CONTRACT_ADDRESS,
+    abi: ABI
   });
 
   useEffect(() => {
-    const fetchContractInfo = async () => {
-      if (!contract) return;
+    if (decimalsData && supplyData) {
+      const decimalValue = Number(decimalsData.decimals);
+      const supply = supplyData.total_supply;
       
-      try {
-        // Fetch decimals
-        const decimalResult = await contract.call("decimals");
-        const decimalValue = Number(decimalResult.decimals);
-        setDecimals(decimalValue);
-
-        // Fetch total supply
-        const supplyResult = await contract.call("total_supply");
-        const supply = supplyResult.total_supply;
-        
-        if (supply) {
-          // Format the total supply with decimals
-          const formattedSupply = (Number(supply.toString()) / Math.pow(10, decimalValue)).toLocaleString();
-          setTotalSupply(formattedSupply);
-        } else {
-          setTotalSupply("0");
-        }
-      } catch (error) {
-        console.error("Error fetching contract info:", error);
-        setTotalSupply("Error fetching total supply");
+      if (supply) {
+        const formattedSupply = (Number(supply.toString()) / Math.pow(10, decimalValue)).toLocaleString();
+        setTotalSupply(formattedSupply);
+      } else {
+        setTotalSupply("0");
       }
-    };
-
-    fetchContractInfo();
-  }, [contract]);
+    }
+  }, [decimalsData, supplyData]);
 
   return (
     <div className="bg-[#1a1b23] p-4 rounded-lg border border-gray-600 mb-4">
