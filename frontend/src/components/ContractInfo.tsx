@@ -73,7 +73,7 @@ export const ABI = [
   {
     name: "burn",
     type: "function",
-    inputs: [{ name: "amount", type: "felt" }],
+    inputs: [{ name: "amount", type: "core::integer::u256" }],
     outputs: [{ name: "success", type: "felt" }],
     state_mutability: "external",
   },

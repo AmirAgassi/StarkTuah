@@ -5,7 +5,6 @@ import {
   useReadContract,
   useSendTransaction,
   useContract,
-  useTransactionReceipt,
 } from "@starknet-react/core";
 import { Transition } from "@headlessui/react";
 import { Fragment } from "react";
@@ -50,9 +49,7 @@ const TokenInput = ({
 
   const handleMaxClick = () => {
     if (maxBalance) {
-      // Subtract a small amount to account for precision issues
-      const adjustedMax = (parseFloat(maxBalance) - 0.01).toFixed(6);
-      onChange(adjustedMax);
+      onChange(maxBalance);
     }
   };
 
@@ -94,22 +91,22 @@ const TokenInput = ({
               MINT
             </button>
           )}
-          <div className="relative">
-            <button
-              className="text-xs text-[#7f8596] font-medium bg-[#2d2f3a] px-2 py-1 rounded-md 
-                hover:bg-[#3d3f4a] hover:text-white transition-all opacity-75 hover:opacity-100"
-              onClick={handleMaxClick}
-              disabled={!maxBalance}
-            >
-              MAX
-            </button>
-            <div className="absolute -bottom-5 right-0 text-xs text-[#7f8596] font-['Roboto'] whitespace-nowrap">
-              BALANCE: {maxBalance ? Number(maxBalance).toFixed(6) : '0.000000'}
-            </div>
-          </div>
+          <button
+            className="text-xs text-[#7f8596] font-medium bg-[#2d2f3a] px-2 py-1 rounded-md 
+              hover:bg-[#3d3f4a] hover:text-white transition-all opacity-75 hover:opacity-100"
+            onClick={handleMaxClick}
+            disabled={!maxBalance}
+          >
+            MAX
+          </button>
         </div>
       </div>
-      <div className="text-[#7f8596] text-sm mt-1">{usdValue}</div>
+      <div className="flex justify-between items-center mt-1">
+        <div className="text-[#7f8596] text-sm">{usdValue}</div>
+        <div className="text-[#7f8596] text-sm font-['Roboto'] bg-[#2d2f3a] px-2 py-1 rounded-md">
+          BALANCE: {maxBalance ? Number(maxBalance).toFixed(2) : '0.00'}
+        </div>
+      </div>
     </div>
   );
 };
@@ -151,7 +148,6 @@ export default function SwapInterface() {
   const usdcContract = useContract({ address: USDC_ADDRESS, abi: ABI });
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
-  const [txHash, setTxHash] = useState<string | undefined>();
 
   const { data: tuahBalanceData } = useReadContract({
     functionName: "balance_of",
@@ -194,9 +190,6 @@ export default function SwapInterface() {
             ]),
           ]
         : undefined,
-    onSuccess: (tx) => {
-      setTxHash(tx.transaction_hash);
-    },
   });
 
   const { send: sendMintUSDC, error: errorMintUSDC } = useSendTransaction({
@@ -204,9 +197,6 @@ export default function SwapInterface() {
       usdcContract?.contract && address
         ? [usdcContract.contract.populate("mint", [100n * 10n ** 18n])]
         : undefined,
-    onSuccess: (tx) => {
-      setTxHash(tx.transaction_hash);
-    },
   });
 
   const { send: sendMintTuah, error: errorMintTuah } = useSendTransaction({
@@ -218,9 +208,6 @@ export default function SwapInterface() {
             ]),
           ]
         : undefined,
-    onSuccess: (tx) => {
-      setTxHash(tx.transaction_hash);
-    },
   });
 
   const { send: sendBurnTuah, error: errorBurnTuah } = useSendTransaction({
@@ -232,19 +219,14 @@ export default function SwapInterface() {
             ]),
           ]
         : undefined,
-    onSuccess: (tx) => {
-      setTxHash(tx.transaction_hash);
-    },
   });
-
-  const { data: txReceipt } = useTransactionReceipt({ hash: txHash });
 
   useEffect(() => {
     if (tuahBalanceData && decimalsData) {
       const decimals = Number(decimalsData.decimals);
       const balanceValue = (
         Number(tuahBalanceData.balance.toString()) / Math.pow(10, decimals)
-      ).toFixed(2);
+      ).toString();
       setBalance(balanceValue);
     }
   }, [tuahBalanceData, decimalsData]);
@@ -253,7 +235,7 @@ export default function SwapInterface() {
     if (usdcBalanceData) {
       const balanceValue = (
         Number(usdcBalanceData.balance.toString()) / Math.pow(10, 18)
-      ).toFixed(2);
+      ).toString();
       setUsdcBalance(balanceValue);
     }
   }, [usdcBalanceData]);
@@ -281,20 +263,17 @@ export default function SwapInterface() {
   };
 
   useEffect(() => {
-    if (txReceipt) {
-      setShowToast(true);
-      setToastMessage("Transaction Success!");
+    if (allowanceData || usdcBalanceData || tuahBalanceData) {
+      setShowToast(true)
       
-      // Reset hash after showing toast
-      setTxHash(undefined);
-      
+      // Hide toast after 3 seconds
       const timer = setTimeout(() => {
-        setShowToast(false);
-      }, 3000);
+        setShowToast(false)
+      }, 3000)
 
-      return () => clearTimeout(timer);
+      return () => clearTimeout(timer)
     }
-  }, [txReceipt]);
+  }, [allowanceData, usdcBalanceData, tuahBalanceData])
 
   return (
     <>
