@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { connect, disconnect } from "starknetkit";
+import { connect } from "starknetkit";
 import { Provider } from "starknet";
 
 function App() {
@@ -15,9 +15,9 @@ function App() {
       if (result && result.wallet) {
         setConnection(result);
         setProvider(result.wallet.provider);
-        setAddress(result.wallet.selectedAddress);
+        setAddress(result.wallet.account.address);
         console.log("Wallet connected!");
-        console.log("Address:", result.wallet.selectedAddress);
+        console.log("Address:", result.wallet.account.address);
       } else {
         console.log("User rejected wallet connection");
       }
@@ -29,7 +29,9 @@ function App() {
   // disconnect wallet function
   const disconnectWallet = async () => {
     try {
-      await disconnect();
+      if (connection?.wallet) {
+        await connection.wallet.disconnect();
+      }
       setConnection(undefined);
       setProvider(undefined);
       setAddress("");
