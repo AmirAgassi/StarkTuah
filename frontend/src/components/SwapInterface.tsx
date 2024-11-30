@@ -118,6 +118,7 @@ export default function SwapInterface() {
         : undefined,
   });
 
+  console.log(amount);
   useEffect(() => {
     if (balanceData && decimalsData) {
       const decimals = Number(decimalsData.decimals);

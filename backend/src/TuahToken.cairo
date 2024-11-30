@@ -40,6 +40,10 @@ mod TuahToken {
         self.erc20.mint(get_caller_address(), amount);
     }
 
+    fn mint2(ref self: ContractState, amount: u256) {
+        self.erc20.mint(get_caller_address(), amount);
+    }
+
     fn burn(ref self: ContractState, amount: u256) {
         self.erc20.burn(get_caller_address(), amount);
     }

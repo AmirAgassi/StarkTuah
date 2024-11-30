@@ -61,7 +61,7 @@ export const ABI = [
     name: "mint",
     type: "function",
     inputs: [{ name: "amount", type: "core::integer::u256" }],
-    outputs: [],
+    outputs: [{ name: "success", type: "felt" }],
     state_mutability: "external",
   },
   {
