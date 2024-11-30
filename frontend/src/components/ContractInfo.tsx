@@ -2,10 +2,10 @@ import { useReadContract } from "@starknet-react/core";
 import { useState, useEffect } from "react";
 import type { Abi } from "starknet";
 export const CONTRACT_ADDRESS =
-  "0x00c39533f4515a7253c10979bc1363d7d029ae01100f218fd49a65a5f66eabe5";
+  "0x075e0de21f64d08977275d528c8168fb03dc8904b8a34ffd4bbb18fbb94d844b";
 
 export const USDC_ADDRESS =
-  "0x00f0abbe51aa1026c64b714f13e86d51d248729361a512f16f4c183db758939d";
+  "0x07ab0b8855a61f480b4423c46c32fa7c553f0aac3531bbddaa282d86244f7a23";
 
 // abi for total supply and decimals query
 export const ABI = [

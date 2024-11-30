@@ -3,6 +3,8 @@ mod TuahToken {
     use openzeppelin_token::erc20::{ERC20Component, ERC20HooksEmptyImpl, interface::IERC20Dispatcher, interface::IERC20DispatcherTrait};
     use starknet::{ContractAddress, get_caller_address};
     use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};   
+    use core::array::ArrayTrait;
+    use crate::ekubo_interface::ekubo_interface::{IEkuboPool, IEkuboPoolDispatcher, IEkuboPoolDispatcherTrait};
 
     component!(path: ERC20Component, storage: erc20, event: ERC20Event);
 
@@ -77,6 +79,34 @@ mod TuahToken {
     fn change_usdc_address(ref self: ContractState, new_address: ContractAddress) {
         assert(get_caller_address() == self.owner.read(), 'Caller is not owner');
         self.usdc_address.write(new_address);
+    }
+
+    #[external(v0)]
+    fn swap_usdc_for_eth(
+        ref self: ContractState,
+        ekubo_pool: ContractAddress,
+        amount_in: u256,
+        min_amount_out: u256
+    ) {
+        // get the usdc address
+        let usdc_address = self.usdc_address.read();
+        
+        // approve ekubo to spend our usdc
+        IERC20Dispatcher { contract_address: usdc_address }.approve(ekubo_pool, amount_in);
+        
+        // perform the swap using the dispatcher
+        let ekubo = IEkuboPoolDispatcher { contract_address: ekubo_pool };
+        let (amount0, _amount1, _sqrt_price) = ekubo.swap(
+            get_caller_address(), // recipient
+            true, // zero_for_one (USDC -> ETH direction)
+            amount_in,
+            0_u128, // no price limit
+            starknet::contract_address_const::<0>(), // no callback
+            ArrayTrait::new() // no callback data
+        );
+
+        // verify minimum amount received
+        assert(amount0 >= min_amount_out, 'insufficient output amount');
     }
 }
 

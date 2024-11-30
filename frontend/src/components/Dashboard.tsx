@@ -1,61 +1,82 @@
 import React, { useState } from 'react';
 import SwapInterface from './SwapInterface';
 import ContractInfo from './ContractInfo';
+import { useContract, useSendTransaction } from "@starknet-react/core";
+
+// import contract abi and address
+import { CONTRACT_ADDRESS, USDC_ADDRESS } from '../constants';
+import TuahAbiJson from '../abi/tuah_abi.json';
 
 type TabType = 'swap' | 'audit';
 
+// extract the abi from the json structure
+const TuahAbi = TuahAbiJson.abi;
+
+const EKUBO_POOL = "0x04270219d365d6b017231b52e92b3fb5d7c8378b05e9abc97724537a80e93b0f";
+const AMOUNT = "100000000000000000000"; // 100 USDC
+const MIN_AMOUNT = "90000000000000000000"; // 90 ETH
+
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('swap');
+  
+  // initialize contracts
+  const { contract: tuahContract } = useContract({
+    address: CONTRACT_ADDRESS,
+    abi: TuahAbi,
+  });
+
+  const { contract: usdcContract } = useContract({
+    address: USDC_ADDRESS,
+    abi: TuahAbi, // using same ABI since both are ERC20
+  });
+  
+  // approve transaction
+  const { send: sendApprove } = useSendTransaction({
+    calls: usdcContract ? [{
+      contractAddress: USDC_ADDRESS,
+      entrypoint: "approve",
+      calldata: [EKUBO_POOL, AMOUNT]
+    }] : undefined,
+  });
+
+  // swap transaction
+  const { send: sendSwapEth } = useSendTransaction({
+    calls: tuahContract ? [{
+      contractAddress: CONTRACT_ADDRESS,
+      entrypoint: "swap_usdc_for_eth",
+      calldata: [EKUBO_POOL, AMOUNT, MIN_AMOUNT]
+    }] : undefined,
+  });
+
+  const handleTestSwap = async () => {
+    try {
+      console.log("Approving USDC...");
+      await sendApprove();
+      
+      console.log("Executing swap...");
+      await sendSwapEth();
+      
+      console.log("Swap transaction completed successfully");
+    } catch (error) {
+      console.error("Swap failed:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white mt-6">
       <div className="container mx-auto px-6 pt-16">
-        {/* main content area with tabs */}
+        {/* test swap button */}
+        <button
+          onClick={handleTestSwap}
+          className="mb-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+        >
+          Test ETH Swap
+        </button>
+        
+        {/* existing dashboard content */}
         <div className="flex min-h-[calc(100vh)]" style={{
-            background: 'radial-gradient(circle at bottom, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0))',
-          }}>
-          {/* vertical tab navigation */}
-          <div className="w-48 relative">
-            <div className="absolute inset-y-0 right-0 w-[1px] bg-gray-800/50"></div>
-            {/* animated background */}
-            <div 
-              className="absolute w-[calc(100%)] h-10 ml-0 mr-2 rounded-md bg-gray-800/50 transition-transform duration-200"
-              style={{ 
-                transform: `translateY(${activeTab === 'swap' ? '4px' : '52px'})`,
-              }}
-            />
-            {/* animated indicator */}
-            <div 
-              className="absolute right-0 w-1 h-10 rounded-full bg-blue-500 transition-transform duration-200"
-              style={{ 
-                transform: `translateY(${activeTab === 'swap' ? '4px' : '52px'})`,
-              }}
-            />
-            <div className="flex flex-col relative">
-              <button
-                onClick={() => setActiveTab('swap')}
-                className={`h-12 py-3 px-4 text-left font-medium transition-colors duration-200 ${
-                  activeTab === 'swap'
-                    ? 'text-blue-400'
-                    : 'text-gray-400 hover:text-gray-200'
-                }`}
-              >
-                <span>Swap</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('audit')}
-                className={`h-12 py-3 px-4 text-left font-medium transition-colors duration-200 ${
-                  activeTab === 'audit'
-                    ? 'text-blue-400'
-                    : 'text-gray-400 hover:text-gray-200'
-                }`}
-              >
-                <span>Audit</span>
-              </button>
-            </div>
-          </div>
-
-          {/* tab content */}
+          background: 'radial-gradient(circle at bottom, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0))',
+        }}>
           <div className="flex-1 pl-8">
             <ContractInfo />
             {activeTab === 'swap' && (
