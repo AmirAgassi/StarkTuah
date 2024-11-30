@@ -1,5 +1,5 @@
 import { useAccount } from "@starknet-react/core";
-import { ABI, CONTRACT_ADDRESS } from "./ContractInfo";
+import { ABI, CONTRACT_ADDRESS, USDC_ADDRESS } from "./ContractInfo";
 import { useState, useEffect } from "react";
 import { useReadContract, useSendTransaction, useContract } from "@starknet-react/core";
 
@@ -111,14 +111,20 @@ export default function SwapInterface() {
     abi: ABI,
   });
 
+  const {data: allowanceData} = useReadContract({
+    functionName: "allowance",
+    args: [address, CONTRACT_ADDRESS],
+    address: USDC_ADDRESS,
+    abi: ABI,
+  });
+
+  console.log(allowanceData);
   const { send, error } = useSendTransaction({
     calls:
       contract?.contract && address
         ? [contract.contract.populate("mint", [amount])]
         : undefined,
   });
-
-  console.log(amount);
   useEffect(() => {
     if (balanceData && decimalsData) {
       const decimals = Number(decimalsData.decimals);
