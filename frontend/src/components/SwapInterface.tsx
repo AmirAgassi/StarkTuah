@@ -6,6 +6,8 @@ import {
   useSendTransaction,
   useContract,
 } from "@starknet-react/core";
+import { Transition } from "@headlessui/react";
+import { Fragment } from "react";
 
 interface TokenInputProps {
   value: string;
@@ -104,6 +106,33 @@ const TokenInput = ({
   );
 };
 
+interface ToastProps {
+  message: string;
+  show: boolean;
+  onClose: () => void;
+}
+
+const Toast = ({ message, show, onClose }: ToastProps) => {
+  return (
+    <Transition
+      show={show}
+      as={Fragment}
+      enter="transform ease-out duration-300 transition"
+      enterFrom="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
+      enterTo="translate-y-0 opacity-100 sm:translate-x-0"
+      leave="transition ease-in duration-100"
+      leaveFrom="opacity-100"
+      leaveTo="opacity-0"
+    >
+      <div className="fixed right-4 bottom-4 z-50">
+        <div className="bg-gray-900 text-white px-4 py-3 rounded-lg shadow-lg">
+          <p>{message}</p>
+        </div>
+      </div>
+    </Transition>
+  );
+};
+
 export default function SwapInterface() {
   const [isSelling, setIsSelling] = useState(true);
   const [amount, setAmount] = useState("");
@@ -112,6 +141,8 @@ export default function SwapInterface() {
   const { address } = useAccount();
   const tuahContract = useContract({ address: CONTRACT_ADDRESS, abi: ABI });
   const usdcContract = useContract({ address: USDC_ADDRESS, abi: ABI });
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
   const { data: tuahBalanceData } = useReadContract({
     functionName: "balance_of",
@@ -217,13 +248,19 @@ export default function SwapInterface() {
   const handleSwapAction = async () => {
     if (!isSelling && amount) {
       sendMintTuah();
+      setToastMessage("Minting USDTuah...");
+      setShowToast(true);
     } else if (isSelling && amount) {
       sendBurnTuah();
+      setToastMessage("Burning USDTuah...");
+      setShowToast(true);
     }
   };
 
   const handleMintUSDC = () => {
     sendMintUSDC();
+    setToastMessage("Minting USDC...");
+    setShowToast(true);
   };
 
   return (
@@ -298,6 +335,11 @@ export default function SwapInterface() {
           </button>
         )}
       </div>
+      <Toast
+        message={toastMessage}
+        show={showToast}
+        onClose={() => setShowToast(false)}
+      />
     </>
   );
 }
