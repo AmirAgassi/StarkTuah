@@ -6,11 +6,12 @@ import { useContract, useSendTransaction } from "@starknet-react/core";
 // import contract abi and address
 import { CONTRACT_ADDRESS, USDC_ADDRESS } from '../constants';
 import TuahAbiJson from '../abi/tuah_abi.json';
+import { Abi } from "starknet";
 
 type TabType = 'swap' | 'audit';
 
-// extract the abi from the json structure
-const TuahAbi = TuahAbiJson.abi;
+// extract the abi from the json structure and type it properly
+const TuahAbi = TuahAbiJson.abi as Abi;
 
 const EKUBO_POOL = "0x04270219d365d6b017231b52e92b3fb5d7c8378b05e9abc97724537a80e93b0f";
 const AMOUNT = "100000000000000000000"; // 100 USDC
@@ -22,12 +23,12 @@ const Dashboard: React.FC = () => {
   // initialize contracts
   const { contract: tuahContract } = useContract({
     address: CONTRACT_ADDRESS,
-    abi: TuahAbi,
+    abi: TuahAbi as Abi,
   });
 
   const { contract: usdcContract } = useContract({
     address: USDC_ADDRESS,
-    abi: TuahAbi, // using same ABI since both are ERC20
+    abi: TuahAbi as Abi, // using same ABI since both are ERC20
   });
   
   // approve transaction

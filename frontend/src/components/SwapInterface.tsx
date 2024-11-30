@@ -141,6 +141,7 @@ export default function SwapInterface() {
     args: [address, CONTRACT_ADDRESS],
     address: USDC_ADDRESS,
     abi: ABI,
+    watch: true,
   });
 
   const { send: approveUSDC, error: errorApproveUSDC } = useSendTransaction({
