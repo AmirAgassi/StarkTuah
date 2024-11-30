@@ -1,9 +1,10 @@
+# Install all the below dependencies
+# Run `python ModelPrediction.py to get a output in the terminal`
+
 import requests
 import pandas as pd
 import numpy as np
-import torch
-import torch.nn as nn
-import torch.onnx
+from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import MinMaxScaler
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, timezone
@@ -14,11 +15,11 @@ import json
 load_dotenv()
 coin_apikey = os.getenv('COINMARKETCAP')
 
-# Date range
+# Set date range for one week
 time_end = datetime.now(timezone.utc)
 time_start = time_end - timedelta(days=7)
 
-# Fetch data from CoinMarketCap API
+# Fetch data from CoinMarketCap
 def fetch_historical_data(coin_apikey, symbol="BTC,ETH,BNB"):
     url = "https://sandbox-api.coinmarketcap.com/v1/cryptocurrency/quotes/historical"
     headers = {
@@ -44,96 +45,79 @@ def fetch_historical_data(coin_apikey, symbol="BTC,ETH,BNB"):
         elif response.status_code == 200:
             print("Request successful.")  # Debug statement
 
-        response.raise_for_status()  # This will raise an HTTPError for bad responses (4xx, 5xx)
+        response.raise_for_status()  # Errors for bad responses (4/500)
         data = response.json()
         print("API Response (first 500 chars):", json.dumps(data, indent=4)[:500])  # Debug statement
         
-        # Check if the API response is valid
-        if response.status_code == 200 and "data" in data and "quotes" in data["data"]:
-            prices = [entry["quote"]["USD"]["price"] for entry in data["data"]["quotes"]]
-            dates = [entry["timestamp"] for entry in data["data"]["quotes"]]
-            return pd.DataFrame({"Date": pd.to_datetime(dates, unit='s'), "Price": prices})
+        # Verify API response based on structure
+        if 'data' in data and all(symbol in data['data'] for symbol in symbol.split(',')):
+            all_prices = []
+            for symbol in symbol.split(','):
+                if 'quotes' in data['data'][symbol]:
+                    prices = [entry['quote']['USD']['price'] for entry in data['data'][symbol]['quotes']]
+                    dates = [entry['timestamp'] for entry in data['data'][symbol]['quotes']]
+                    
+                    # Convert frames and ensure string is good to work with
+                    symbol_df = pd.DataFrame({
+                        "Symbol": symbol,
+                        "Date": pd.to_datetime(dates),  # Convert ISO string to datetime because pandas can work with it directly
+                        "Price": prices
+                    })
+                    all_prices.append(symbol_df)
+            # Concatenate all the symbol dataframes into one
+            return pd.concat(all_prices, ignore_index=True)
         else:
-            raise Exception(f"Error: {data.get('status', {}).get('error_message', 'Unknown error')}")
+            raise Exception("Missing expected 'quotes' data in the API response.")
     
     except requests.exceptions.RequestException as e:
         print(f"Request failed: {e}")  # Debug statement
         raise SystemExit(f"Request failed: {e}")
 
-# Fetch historical price data
+# Fetch historical price data: Like our main method starts here
 try:
     print("Starting to fetch data...")  # Debug statement
     df = fetch_historical_data(coin_apikey, symbol="BTC,ETH,BNB")
-    print("Data fetched successfully, displaying first 5 rows:")  # Debug statement
-    print(df.head())
+    if df is not None and not df.empty:
+        print("Data fetched successfully, displaying first 5 rows:")  # Debug statement
+        print(df.head())
 except Exception as e:
     print(f"Error occurred: {e}")  # Debug statement
 
-# Preprocess the data
-if 'df' in locals():
+# Preprocess the data for Linear Regression
+if 'df' in locals() and not df.empty:
     print("Preprocessing the data...")  # Debug statement
     scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_prices = scaler.fit_transform(df["Price"].values.reshape(-1, 1))
 
-    # Create sequences for LSTM training
-    def create_sequences(data, seq_length=5):
-        X, y = [], []
-        for i in range(len(data) - seq_length):
-            X.append(data[i:i+seq_length])
-            y.append(data[i+seq_length])
-        return np.array(X), np.array(y)
+    # Use the last 5 hours of data for predicting the next hour
+    X = []
+    y = []
+    for i in range(len(scaled_prices) - 1):
+        X.append(scaled_prices[i:i+1])  # Use the previous hour to predict the next hour
+        y.append(scaled_prices[i+1])    # Next hour price
 
-    seq_length = 5
-    X, y = create_sequences(scaled_prices, seq_length)
+    X = np.array(X).reshape(-1, 1)  # Fix the shape for LinearRegression
+    y = np.array(y)
 
-    # Convert to PyTorch tensors
-    X = torch.tensor(X, dtype=torch.float32)
-    y = torch.tensor(y, dtype=torch.float32)
+    # Train a Linear Regression model
+    model = LinearRegression()
+    model.fit(X, y)
 
-    # Define and train an LSTM Model
-    class LSTMModel(nn.Module):
-        def __init__(self, input_size, hidden_size, output_size):
-            super(LSTMModel, self).__init__()
-            self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
-            self.fc = nn.Linear(hidden_size, output_size)
-        
-        def forward(self, x):
-            _, (hidden, _) = self.lstm(x)
-            return self.fc(hidden[-1])
+    # Predict the next hour's price
+    predicted_price = model.predict(X[-1].reshape(1, -1))
 
-    model = LSTMModel(input_size=1, hidden_size=64, output_size=1)
-    criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    # Scale the predicted price back to the original range
+    predicted_price = scaler.inverse_transform(predicted_price.reshape(-1, 1))[0][0]
+    print(f"Predicted price for the next hour: ${predicted_price:.2f}")
 
-    # Training loop
-    epochs = 50
-    for epoch in range(epochs):
-        model.train()
-        optimizer.zero_grad()
-        predictions = model(X)
-        loss = criterion(predictions, y)
-        loss.backward()
-        optimizer.step()
-        if (epoch + 1) % 10 == 0:
-            print(f"Epoch {epoch+1}/{epochs}, Loss: {loss.item()}")
+    # Get the current price (last known price)
+    current_price = df["Price"].iloc[-1]
+    print(f"Current price: ${current_price:.2f}")
 
-    # Export the model to ONNX
-    onnx_path = "price_prediction.onnx"
-    dummy_input = torch.randn(1, seq_length, 1)  # Shape: (batch_size, seq_length, input_size)
-    torch.onnx.export(model, dummy_input, onnx_path, input_names=["input"], output_names=["output"])
-
-    print(f"Model exported to {onnx_path}")
-
-# Use Giza to Deploy Model on Starknet
-# Assuming Giza is set up, use the CLI for preprocessing:
-# 1. Preprocess the ONNX model for Cairo
-#    $ python giza.py preprocess --model price_prediction.onnx --output_dir ./cairo_model
-# - alternate giza cli
-# $ giza preprocess --model your_model.onnx --output_dir ./cairo_model
-# 2. Deploy the generated Cairo contract to Starknet
-#    $ starknet deploy --network testnet --contract ./cairo_model/model.cairo
-# 3. Generate proof for new inputs
-#    $ python giza.py proof --model price_prediction.onnx --input ./input.json --output ./proof.json
-# - alternate giza cli
-# # giza proof --model your_model.onnx --input input.json --output proof.json
-# 4. Verify the proof on-chain using Starknet CLI
+    # Predict if the price will go up or down
+    if predicted_price > current_price:
+        print("The price will go UP.")
+    elif predicted_price < current_price:
+        print("The price will go DOWN.")
+    else:
+        print("The price is stable.")
