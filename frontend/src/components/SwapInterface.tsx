@@ -18,7 +18,7 @@ const TokenInput = ({ value, onChange, token, label, isTopInput = false }: Token
   };
 
   return (
-    <div className={`bg-[#1a1b23] p-4 rounded-lg border border-[#2d2f3a]
+    <div className={`bg-[#1a1b23] p-4 rounded-lg border border-gray-600
       ${isTopInput ? 'pb-8' : 'pt-8'}`}>
       <div className="flex justify-between mb-2">
         <span className="text-[#7f8596] font-medium">{label}</span>
@@ -61,6 +61,13 @@ export default function SwapInterface() {
   };
 
   return (
+    <>
+    <h1 className="text-3xl mx-auto mt-8 text-center font-semibold">
+      Freakify your cryptocurrencies,
+    </h1>
+    <h1 className="text-3xl mx-auto mb-6 text-center font-semibold">
+      start today.
+    </h1>
     <div className="max-w-md mx-auto bg-[#212229] rounded-xl p-4 border border-[#2d2f3a]">
       <div className="relative">
         <div className="space-y-1">
@@ -108,5 +115,6 @@ export default function SwapInterface() {
         Swap
       </button>
     </div>
+    </>
   );
 } 
