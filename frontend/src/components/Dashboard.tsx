@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import SwapInterface from './SwapInterface';
+import ContractInfo from './ContractInfo';
 
 type TabType = 'swap' | 'audit';
 
@@ -57,6 +58,7 @@ const Dashboard: React.FC = () => {
           style={{
             background: 'radial-gradient(circle at bottom, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0))',
           }}>
+            <ContractInfo />
             {activeTab === 'swap' && (
               <div>
                 <SwapInterface />

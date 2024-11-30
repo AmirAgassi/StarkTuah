@@ -11,11 +11,17 @@ interface TokenInputProps {
 const TokenInput = ({ value, onChange, token, label, isTopInput = false }: TokenInputProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    // only allow non-negative numbers
-    if (newValue === '' || (!isNaN(Number(newValue)) && Number(newValue) >= 0)) {
+    // only allow non-negative numbers with up to 6 decimal places
+    if (newValue === '' || (/^\d*\.?\d{0,6}$/.test(newValue) && Number(newValue) >= 0)) {
       onChange(newValue);
     }
   };
+
+  // Calculate USD value (1:1 for stablecoins)
+  const usdValue = value ? `$${Number(value).toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })}` : "$0.00";
 
   return (
     <div className={`bg-[#1a1b23] p-4 rounded-lg border border-gray-600
@@ -31,26 +37,27 @@ const TokenInput = ({ value, onChange, token, label, isTopInput = false }: Token
       </div>
       <div className="relative group">
         <input
-          type="number"
+          type="text"
           value={value}
           onChange={handleChange}
-          min="0"
-          step="any"
           className="w-full bg-transparent text-3xl text-white outline-none font-medium
             placeholder:text-white/20 appearance-none [&::-webkit-inner-spin-button]:appearance-none
             [&::-webkit-outer-spin-button]:appearance-none"
           placeholder="0"
         />
         <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button className="text-xs text-[#7f8596] font-medium bg-[#2d2f3a] px-2 py-1 rounded-md hover:bg-[#3d3f4a]">
+          <button 
+            className="text-xs text-[#7f8596] font-medium bg-[#2d2f3a] px-2 py-1 rounded-md hover:bg-[#3d3f4a]"
+            onClick={() => onChange("1000")} // Set a default MAX value
+          >
             MAX
           </button>
         </div>
       </div>
-      <div className="text-[#7f8596] text-sm mt-1">≈ $0.00</div>
+      <div className="text-[#7f8596] text-sm mt-1">{usdValue}</div>
     </div>
   );
-};
+}
 
 export default function SwapInterface() {
   const [isSelling, setIsSelling] = useState(true);
