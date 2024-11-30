@@ -1,7 +1,11 @@
 import { useAccount } from "@starknet-react/core";
 import { ABI, CONTRACT_ADDRESS, USDC_ADDRESS } from "./ContractInfo";
 import { useState, useEffect } from "react";
-import { useReadContract, useSendTransaction, useContract } from "@starknet-react/core";
+import {
+  useReadContract,
+  useSendTransaction,
+  useContract,
+} from "@starknet-react/core";
 
 interface TokenInputProps {
   value: string;
@@ -123,19 +127,19 @@ export default function SwapInterface() {
     abi: ABI,
   });
 
-  const {data: allowanceData} = useReadContract({
+  const { data: allowanceData } = useReadContract({
     functionName: "allowance",
     args: [address, CONTRACT_ADDRESS],
     address: USDC_ADDRESS,
     abi: ABI,
   });
 
-    const { send: sendMintUSDC, error: errorMintUSDC } = useSendTransaction({
-      calls:
-        usdcContract?.contract && address
-          ? [usdcContract.contract.populate("mint", [100n * (10n ** 18n)])]
-          : undefined,
-    });
+  const { send: sendMintUSDC, error: errorMintUSDC } = useSendTransaction({
+    calls:
+      usdcContract?.contract && address
+        ? [usdcContract.contract.populate("mint", [100n * 10n ** 18n])]
+        : undefined,
+  });
 
   console.log(allowanceData);
 
@@ -145,7 +149,6 @@ export default function SwapInterface() {
         ? [tuahContract.contract.populate("mint", [amount])]
         : undefined,
   });
-
 
   useEffect(() => {
     if (balanceData && decimalsData) {
