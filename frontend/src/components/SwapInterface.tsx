@@ -50,7 +50,9 @@ const TokenInput = ({
 
   const handleMaxClick = () => {
     if (maxBalance) {
-      onChange(maxBalance);
+      // Subtract a small amount to account for precision issues
+      const adjustedMax = (parseFloat(maxBalance) - 0.01).toFixed(6);
+      onChange(adjustedMax);
     }
   };
 
@@ -102,7 +104,7 @@ const TokenInput = ({
               MAX
             </button>
             <div className="absolute -bottom-5 right-0 text-xs text-[#7f8596] font-['Roboto'] whitespace-nowrap">
-              BALANCE: {maxBalance || '0.00'}
+              BALANCE: {maxBalance ? Number(maxBalance).toFixed(6) : '0.000000'}
             </div>
           </div>
         </div>
