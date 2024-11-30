@@ -1,4 +1,4 @@
-import { useReadContract } from "@starknet-react/core";
+import { useReadContract, useAccount } from "@starknet-react/core";
 import { useState, useEffect } from "react";
 import type { Abi } from "starknet";
 export const CONTRACT_ADDRESS =
@@ -101,6 +101,7 @@ export const ABI = [
 
 export default function ContractInfo() {
   const [totalSupply, setTotalSupply] = useState<string | null>(null);
+  const { address } = useAccount();
 
   const { data: decimalsData } = useReadContract({
     functionName: "decimals",
@@ -120,10 +121,10 @@ export default function ContractInfo() {
   const { data: allowanceData } = useReadContract({
     functionName: "allowance",
     args: [
+      address,
       CONTRACT_ADDRESS,
-      USDC_ADDRESS,
     ],
-    address: CONTRACT_ADDRESS,
+    address: USDC_ADDRESS,
     abi: ABI,
     watch: true,
   });

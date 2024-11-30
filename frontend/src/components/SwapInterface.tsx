@@ -173,7 +173,7 @@ export default function SwapInterface() {
     address: USDC_ADDRESS,
     abi: ABI,
     watch: true,
-  });
+  }); 
 
   const { send: approveUSDC, error: errorApproveUSDC } = useSendTransaction({
     calls:
@@ -257,6 +257,19 @@ export default function SwapInterface() {
     sendMintUSDC();
   };
 
+  useEffect(() => {
+    if (allowanceData || usdcBalanceData || tuahBalanceData) {
+      setShowToast(true)
+      
+      // Hide toast after 3 seconds
+      const timer = setTimeout(() => {
+        setShowToast(false)
+      }, 3000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [allowanceData, usdcBalanceData, tuahBalanceData])
+
   return (
     <>
       <h1 className="text-3xl mx-auto mt-8 text-center font-semibold">
@@ -334,6 +347,20 @@ export default function SwapInterface() {
         show={showToast}
         onClose={() => setShowToast(false)}
       />
+      <Transition
+        show={showToast}
+        enter="transition-opacity duration-300"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+        leave="transition-opacity duration-300"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
+        className="fixed top-4 right-4"
+      >
+        <div className="bg-green-500 text-white px-4 py-2 rounded-md shadow-lg">
+          Transaction Success!
+        </div>
+      </Transition>
     </>
   );
 }
