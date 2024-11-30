@@ -1,12 +1,17 @@
-import { useAccount, useConnect } from "@starknet-react/core";
+import { useAccount, useConnect, useDisconnect } from "@starknet-react/core";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 
 export default function Navbar() {
   const { connect, connectors } = useConnect();
   const { address } = useAccount();
+  const { disconnect } = useDisconnect();
 
   const argentX = connectors.find((connector) => connector.id === "argentX");
+
+  const handleDisconnect = async () => {
+    await disconnect();
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-900/80 backdrop-blur-sm border-b border-gray-800">
@@ -23,6 +28,7 @@ export default function Navbar() {
                       {address.slice(0, 6)}...{address.slice(-4)}
                     </span>
                   </Menu.Button>
+                  
                   <Transition
                     as={Fragment}
                     enter="transition ease-out duration-100"
@@ -32,14 +38,14 @@ export default function Navbar() {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                   >
-                    <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-lg bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-lg bg-gray-800 shadow-lg">
                       <Menu.Item>
-                        {({ active }: { active: boolean }) => (
+                        {({ active }) => (
                           <button
+                            onClick={handleDisconnect}
                             className={`${
-                              active ? "bg-gray-700" : ""
-                            } block w-full px-4 py-2 text-sm text-gray-300 text-left hover:text-white`}
-                            onClick={() => {/* Add disconnect function here */}}
+                              active ? 'bg-gray-700 text-white' : 'text-gray-300'
+                            } group flex w-full items-center rounded-lg px-4 py-2 text-sm`}
                           >
                             Disconnect
                           </button>
