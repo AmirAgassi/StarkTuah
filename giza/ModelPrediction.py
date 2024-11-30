@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 from datetime import datetime, timedelta, timezone
 import os
 import json
+from skl2onnx import convert_sklearn
+from skl2onnx.common.data_types import FloatTensorType
 
 # Load environment variables
 load_dotenv()
@@ -121,3 +123,15 @@ if 'df' in locals() and not df.empty:
         print("The price will go DOWN.")
     else:
         print("The price is stable.")
+
+
+# Define the input type for the ONNX model
+initial_type = [("input", FloatTensorType([None, 1]))]
+
+# Convert the trained model to ONNX format
+onnx_model = convert_sklearn(model, initial_types=initial_type)
+
+# Save the ONNX model to a file
+with open("linear_regression.onnx", "wb") as f:
+    f.write(onnx_model.SerializeToString())
+print("Model exported to ONNX format.")
