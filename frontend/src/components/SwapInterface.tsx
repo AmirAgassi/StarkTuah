@@ -242,7 +242,7 @@ export default function SwapInterface() {
       const decimals = Number(decimalsData.decimals);
       const balanceValue = (
         Number(tuahBalanceData.balance.toString()) / Math.pow(10, decimals)
-      ).toString();
+      ).toFixed(2);
       setBalance(balanceValue);
     }
   }, [tuahBalanceData, decimalsData]);
@@ -251,7 +251,7 @@ export default function SwapInterface() {
     if (usdcBalanceData) {
       const balanceValue = (
         Number(usdcBalanceData.balance.toString()) / Math.pow(10, 18)
-      ).toString();
+      ).toFixed(2);
       setUsdcBalance(balanceValue);
     }
   }, [usdcBalanceData]);
