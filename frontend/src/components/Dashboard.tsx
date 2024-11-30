@@ -10,7 +10,7 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-gray-900 text-white">
       <div className="container mx-auto px-6 pt-20">
         {/* main content area with tabs */}
-        <div className="flex min-h-[calc(100vh-5rem)]">
+        <div className="flex min-h-[calc(100vh)]">
           {/* vertical tab navigation */}
           <div className="w-48 relative">
             <div className="absolute inset-y-0 right-0 w-[1px] bg-gray-800/50"></div>
