@@ -1,10 +1,10 @@
 import { useContract, useProvider } from "@starknet-react/core";
 import { useState, useEffect } from "react";
 
-const CONTRACT_ADDRESS = "0x0771c943ac94b6778c0d7f8cbe1aa12962161cd40bcc37e8d5c45bb54625ce78";
+export const CONTRACT_ADDRESS = "0x0771c943ac94b6778c0d7f8cbe1aa12962161cd40bcc37e8d5c45bb54625ce78";
 
 // abi for total supply and decimals query
-const ABI = [
+export const ABI = [
   {
     name: "total_supply",
     type: "function",
@@ -18,6 +18,33 @@ const ABI = [
     inputs: [],
     outputs: [{ name: "decimals", type: "felt" }],
     state_mutability: "view"
+  },
+  {
+    name: "balance_of",
+    type: "function",
+    inputs: [{ name: "account", type: "felt" }],
+    outputs: [{ name: "balance", type: "felt" }],
+    state_mutability: "view"
+  },
+  {
+    name: "transfer",
+    type: "function",
+    inputs: [
+      { name: "recipient", type: "felt" },
+      { name: "amount", type: "felt" }
+    ],
+    outputs: [{ name: "success", type: "felt" }],
+    state_mutability: "external"
+  },
+  {
+    name: "approve",
+    type: "function",
+    inputs: [
+      { name: "spender", type: "felt" },
+      { name: "amount", type: "felt" }
+    ],
+    outputs: [{ name: "success", type: "felt" }],
+    state_mutability: "external"
   }
 ] as const;
 
