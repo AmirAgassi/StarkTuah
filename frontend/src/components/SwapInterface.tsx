@@ -158,7 +158,7 @@ export default function SwapInterface() {
         : undefined,
   });
 
-  console.log(allowanceData);
+  //console.log(allowanceData);
 
   const { send: sendMintTuah, error: errorMintTuah } = useSendTransaction({
     calls:
