@@ -1,6 +1,6 @@
 import { useReadContract } from "@starknet-react/core";
 import { useState, useEffect } from "react";
-
+import type { Abi } from "starknet";
 export const CONTRACT_ADDRESS =
   "0x0771c943ac94b6778c0d7f8cbe1aa12962161cd40bcc37e8d5c45bb54625ce78";
 
@@ -91,7 +91,7 @@ export const ABI = [
     outputs: [{ name: "success", type: "felt" }],
     state_mutability: "external",
   },
-] as const;
+] as const satisfies Abi;
 
 export default function ContractInfo() {
   const [totalSupply, setTotalSupply] = useState<string | null>(null);
