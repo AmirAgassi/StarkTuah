@@ -10,6 +10,7 @@ interface TokenInputProps {
   label: string;
   isTopInput?: boolean;
   maxBalance?: string;
+  onMint?: () => void;
 }
 
 const TokenInput = ({
@@ -19,6 +20,7 @@ const TokenInput = ({
   label,
   isTopInput = false,
   maxBalance,
+  onMint,
 }: TokenInputProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
@@ -73,7 +75,16 @@ const TokenInput = ({
             [&::-webkit-outer-spin-button]:appearance-none"
           placeholder="0"
         />
-        <div className="absolute right-0 top-1/2 -translate-y-1/2">
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 flex gap-2">
+          {token === "USDC" && onMint && (
+            <button
+              className="text-xs text-[#7f8596] font-medium bg-[#2d2f3a] px-2 py-1 rounded-md 
+                hover:bg-[#3d3f4a] hover:text-white transition-all opacity-75 hover:opacity-100"
+              onClick={onMint}
+            >
+              MINT
+            </button>
+          )}
           <button
             className="text-xs text-[#7f8596] font-medium bg-[#2d2f3a] px-2 py-1 rounded-md 
               hover:bg-[#3d3f4a] hover:text-white transition-all opacity-75 hover:opacity-100"
@@ -156,6 +167,10 @@ export default function SwapInterface() {
     }
   };
 
+  const handleMintUSDC = () => {
+    sendMintUSDC();
+  };
+
   return (
     <>
       <h1 className="text-3xl mx-auto mt-8 text-center font-semibold">
@@ -174,6 +189,7 @@ export default function SwapInterface() {
               label={isSelling ? "Buy" : "Sell"}
               isTopInput={true}
               maxBalance={isSelling ? balance : undefined}
+              onMint={!isSelling ? handleMintUSDC : undefined}
             />
             <TokenInput
               value={amount}
