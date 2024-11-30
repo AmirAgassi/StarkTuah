@@ -82,14 +82,14 @@ export default function SwapInterface() {
             value={amount}
             onChange={setAmount}
             token={isSelling ? "USDTuah" : "USDC"}
-            label={isSelling ? "Sell" : "Buy"}
+            label={isSelling ? "Buy" : "Sell"}
             isTopInput={true}
           />
           <TokenInput
             value={amount}
             onChange={setAmount}
             token={isSelling ? "USDC" : "USDTuah"}
-            label={isSelling ? "Buy" : "Sell"}
+            label={isSelling ? "Sell" : "Buy"}
           />
         </div>
 
