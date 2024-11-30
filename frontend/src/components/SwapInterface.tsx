@@ -1,5 +1,5 @@
 import { useAccount } from "@starknet-react/core";
-import { ABI, CONTRACT_ADDRESS } from "./ContractInfo";
+import { ABI, CONTRACT_ADDRESS, USDC_ADDRESS } from "./ContractInfo";
 import { useState, useEffect } from "react";
 import { useReadContract, useSendTransaction, useContract } from "@starknet-react/core";
 
@@ -10,6 +10,7 @@ interface TokenInputProps {
   label: string;
   isTopInput?: boolean;
   maxBalance?: string;
+  onMint?: () => void;
 }
 
 const TokenInput = ({
@@ -19,6 +20,7 @@ const TokenInput = ({
   label,
   isTopInput = false,
   maxBalance,
+  onMint,
 }: TokenInputProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
@@ -73,7 +75,16 @@ const TokenInput = ({
             [&::-webkit-outer-spin-button]:appearance-none"
           placeholder="0"
         />
-        <div className="absolute right-0 top-1/2 -translate-y-1/2">
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 flex gap-2">
+          {token === "USDC" && (
+            <button
+              className="text-xs text-[#7f8596] font-medium bg-[#2d2f3a] px-2 py-1 rounded-md 
+                hover:bg-[#3d3f4a] hover:text-white transition-all opacity-75 hover:opacity-100"
+              onClick={onMint}
+            >
+              MINT
+            </button>
+          )}
           <button
             className="text-xs text-[#7f8596] font-medium bg-[#2d2f3a] px-2 py-1 rounded-md 
               hover:bg-[#3d3f4a] hover:text-white transition-all opacity-75 hover:opacity-100"
@@ -94,7 +105,8 @@ export default function SwapInterface() {
   const [amount, setAmount] = useState("");
   const [balance, setBalance] = useState<string | null>(null);
   const { address } = useAccount();
-  const contract = useContract({ address: CONTRACT_ADDRESS, abi: ABI });
+  const tuahContract = useContract({ address: CONTRACT_ADDRESS, abi: ABI });
+  const usdcContract = useContract({ address: USDC_ADDRESS, abi: ABI });
 
   const { data: balanceData } = useReadContract({
     functionName: "balance_of",
@@ -111,14 +123,30 @@ export default function SwapInterface() {
     abi: ABI,
   });
 
-  const { send, error } = useSendTransaction({
+  const {data: allowanceData} = useReadContract({
+    functionName: "allowance",
+    args: [address, CONTRACT_ADDRESS],
+    address: USDC_ADDRESS,
+    abi: ABI,
+  });
+
+    const { send: sendMintUSDC, error: errorMintUSDC } = useSendTransaction({
+      calls:
+        usdcContract?.contract && address
+          ? [usdcContract.contract.populate("mint", [100n * (10n ** 18n)])]
+          : undefined,
+    });
+
+  console.log(allowanceData);
+
+  const { send: sendMintTuah, error: errorMintTuah } = useSendTransaction({
     calls:
-      contract?.contract && address
-        ? [contract.contract.populate("mint", [amount])]
+      tuahContract?.contract && address
+        ? [tuahContract.contract.populate("mint", [amount])]
         : undefined,
   });
 
-  console.log(amount);
+
   useEffect(() => {
     if (balanceData && decimalsData) {
       const decimals = Number(decimalsData.decimals);
@@ -135,8 +163,12 @@ export default function SwapInterface() {
 
   const handleSwapAction = async () => {
     if (!isSelling && amount) {
-      send();
+      sendMintTuah();
     }
+  };
+
+  const handleMintUSDC = () => {
+    sendMintUSDC();
   };
 
   return (
@@ -157,6 +189,7 @@ export default function SwapInterface() {
               label={isSelling ? "Buy" : "Sell"}
               isTopInput={true}
               maxBalance={isSelling ? balance : undefined}
+              onMint={handleMintUSDC}
             />
             <TokenInput
               value={amount}
@@ -164,6 +197,7 @@ export default function SwapInterface() {
               token={isSelling ? "USDC" : "USDTuah"}
               label={isSelling ? "Sell" : "Buy"}
               maxBalance={!isSelling ? balance : undefined}
+              onMint={handleMintUSDC}
             />
           </div>
 

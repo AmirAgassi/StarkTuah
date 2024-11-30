@@ -33,7 +33,7 @@ mod TuahToken {
         recipient: ContractAddress,
         usdc_address: ContractAddress
     ) {
-        let name = "Stark Tuah";
+       let name = "Stark Tuah";
         let symbol = "USDTuah";
 
         self.erc20.initializer(name, symbol);
