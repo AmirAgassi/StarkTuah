@@ -8,9 +8,6 @@ const Landing: React.FC = () => {
         <p className="text-xl text-gray-300 mb-8">
           Connect your wallet to access the dashboard and start trading.
         </p>
-        <div className="animate-bounce">
-          ↓ Connect using the button above ↓
-        </div>
       </div>
     </div>
   );
