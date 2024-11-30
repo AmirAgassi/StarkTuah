@@ -104,7 +104,7 @@ const TokenInput = ({
       <div className="flex justify-between items-center mt-1">
         <div className="text-[#7f8596] text-sm">{usdValue}</div>
         <div className="text-[#7f8596] text-sm font-['Roboto'] bg-[#2d2f3a] px-2 py-1 rounded-md">
-          BALANCE: {maxBalance ? Number(maxBalance).toFixed(2) : '0.00'}
+          BALANCE: {maxBalance ? Number(maxBalance).toFixed(2) : "0.00"}
         </div>
       </div>
     </div>
@@ -154,7 +154,7 @@ export default function SwapInterface() {
     args: [address],
     address: CONTRACT_ADDRESS,
     abi: ABI,
-    watch: true,
+    refetchInterval: 1000,
   });
 
   const { data: usdcBalanceData } = useReadContract({
@@ -162,7 +162,7 @@ export default function SwapInterface() {
     args: [address],
     address: USDC_ADDRESS,
     abi: ABI,
-    watch: true,
+    refetchInterval: 1000,
   });
 
   const { data: decimalsData } = useReadContract({
@@ -177,8 +177,8 @@ export default function SwapInterface() {
     args: [address, CONTRACT_ADDRESS],
     address: USDC_ADDRESS,
     abi: ABI,
-    watch: true,
-  }); 
+    refetchInterval: 1000,
+  });
 
   const { send: approveUSDC, error: errorApproveUSDC } = useSendTransaction({
     calls:
@@ -264,16 +264,16 @@ export default function SwapInterface() {
 
   useEffect(() => {
     if (allowanceData || usdcBalanceData || tuahBalanceData) {
-      setShowToast(true)
-      
+      setShowToast(true);
+
       // Hide toast after 3 seconds
       const timer = setTimeout(() => {
-        setShowToast(false)
-      }, 3000)
+        setShowToast(false);
+      }, 3000);
 
-      return () => clearTimeout(timer)
+      return () => clearTimeout(timer);
     }
-  }, [allowanceData, usdcBalanceData, tuahBalanceData])
+  }, [allowanceData, usdcBalanceData, tuahBalanceData]);
 
   return (
     <>
