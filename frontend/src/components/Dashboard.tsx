@@ -56,10 +56,7 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* tab content */}
-          <div className="flex-1 pl-8"
-          style={{
-            background: 'radial-gradient(circle at bottom, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0))',
-          }}>
+          <div className="flex-1 pl-8">
             <ContractInfo />
             {activeTab === 'swap' && (
               <div>
