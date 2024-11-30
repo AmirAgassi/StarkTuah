@@ -54,9 +54,10 @@ const TokenInput = ({ value, onChange, token, label, isTopInput = false, maxBala
             [&::-webkit-outer-spin-button]:appearance-none"
           placeholder="0"
         />
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute right-0 top-1/2 -translate-y-1/2">
           <button 
-            className="text-xs text-[#7f8596] font-medium bg-[#2d2f3a] px-2 py-1 rounded-md hover:bg-[#3d3f4a]"
+            className="text-xs text-[#7f8596] font-medium bg-[#2d2f3a] px-2 py-1 rounded-md 
+              hover:bg-[#3d3f4a] hover:text-white transition-all opacity-75 hover:opacity-100"
             onClick={handleMaxClick}
             disabled={!maxBalance}
           >
