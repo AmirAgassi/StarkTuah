@@ -44,8 +44,11 @@ export const ABI = [
     name: "approve",
     type: "function",
     inputs: [
-      { name: "spender", type: "felt" },
-      { name: "amount", type: "felt" },
+      {
+        name: "spender",
+        type: "core::starknet::contract_address::ContractAddress",
+      },
+      { name: "amount", type: "core::integer::u256" },
     ],
     outputs: [{ name: "success", type: "felt" }],
     state_mutability: "external",

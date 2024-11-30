@@ -108,14 +108,23 @@ export default function SwapInterface() {
   const [isSelling, setIsSelling] = useState(true);
   const [amount, setAmount] = useState("");
   const [balance, setBalance] = useState<string | null>(null);
+  const [usdcBalance, setUsdcBalance] = useState<string | null>(null);
   const { address } = useAccount();
   const tuahContract = useContract({ address: CONTRACT_ADDRESS, abi: ABI });
   const usdcContract = useContract({ address: USDC_ADDRESS, abi: ABI });
 
-  const { data: balanceData } = useReadContract({
+  const { data: tuahBalanceData } = useReadContract({
     functionName: "balance_of",
     args: [address],
     address: CONTRACT_ADDRESS,
+    abi: ABI,
+    watch: true,
+  });
+
+  const { data: usdcBalanceData } = useReadContract({
+    functionName: "balance_of",
+    args: [address],
+    address: USDC_ADDRESS,
     abi: ABI,
     watch: true,
   });
@@ -132,6 +141,13 @@ export default function SwapInterface() {
     args: [address, CONTRACT_ADDRESS],
     address: USDC_ADDRESS,
     abi: ABI,
+  });
+
+  const { send: approveUSDC, error: errorApproveUSDC } = useSendTransaction({
+    calls:
+      usdcContract?.contract && address
+        ? [usdcContract.contract.populate("approve", [CONTRACT_ADDRESS, BigInt('1000000000000000000000000')])]
+        : undefined,
   });
 
   const { send: sendMintUSDC, error: errorMintUSDC } = useSendTransaction({
@@ -151,17 +167,32 @@ export default function SwapInterface() {
   });
 
   useEffect(() => {
-    if (balanceData && decimalsData) {
+    if (tuahBalanceData && decimalsData) {
       const decimals = Number(decimalsData.decimals);
       const balanceValue = (
-        Number(balanceData.balance.toString()) / Math.pow(10, decimals)
+        Number(tuahBalanceData.balance.toString()) / Math.pow(10, decimals)
       ).toString();
       setBalance(balanceValue);
     }
-  }, [balanceData, decimalsData]);
+  }, [tuahBalanceData, decimalsData]);
+
+  useEffect(() => {
+    if (usdcBalanceData) {
+      const balanceValue = (
+        Number(usdcBalanceData.balance.toString()) / Math.pow(10, 18)
+      ).toString();
+      setUsdcBalance(balanceValue);
+    }
+  }, [usdcBalanceData]);
 
   const handleSwap = () => {
     setIsSelling(!isSelling);
+  };
+
+  const needsApproval = () => {
+    if (!allowanceData || !amount) return false;
+    const amountBigInt = BigInt(parseFloat(amount) * 1e18); // Convert to proper decimals
+    return !isSelling && BigInt(allowanceData.remaining) < amountBigInt;
   };
 
   const handleSwapAction = async () => {
@@ -191,7 +222,7 @@ export default function SwapInterface() {
               token={isSelling ? "USDTuah" : "USDC"}
               label={isSelling ? "Buy" : "Sell"}
               isTopInput={true}
-              maxBalance={isSelling ? balance : undefined}
+              maxBalance={isSelling ? balance : usdcBalance}
               onMint={handleMintUSDC}
             />
             <TokenInput
@@ -199,7 +230,7 @@ export default function SwapInterface() {
               onChange={setAmount}
               token={isSelling ? "USDC" : "USDTuah"}
               label={isSelling ? "Sell" : "Buy"}
-              maxBalance={!isSelling ? balance : undefined}
+              maxBalance={!isSelling ? balance : usdcBalance}
               onMint={handleMintUSDC}
             />
           </div>
@@ -228,13 +259,23 @@ export default function SwapInterface() {
           </button>
         </div>
 
-        <button
-          onClick={handleSwapAction}
-          className="w-full mt-4 bg-[#6366f1] hover:bg-[#4f46e5] text-white font-medium 
-        py-3 px-4 rounded-lg transition-colors"
-        >
-          Swap
-        </button>
+        {needsApproval() ? (
+          <button
+            onClick={() => approveUSDC()}
+            className="w-full mt-4 bg-[#6366f1] hover:bg-[#4f46e5] text-white font-medium 
+          py-3 px-4 rounded-lg transition-colors"
+          >
+            Approve USDC
+          </button>
+        ) : (
+          <button
+            onClick={handleSwapAction}
+            className="w-full mt-4 bg-[#FF007A] hover:bg-[#cc0062] text-white font-medium 
+          py-3 px-4 rounded-lg transition-colors"
+          >
+            Swap
+          </button>
+        )}
       </div>
     </>
   );
