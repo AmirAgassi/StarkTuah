@@ -1,6 +1,7 @@
-import { useContract, useAccount } from "@starknet-react/core";
+import { useAccount } from "@starknet-react/core";
 import { ABI, CONTRACT_ADDRESS } from "./ContractInfo";
 import { useState, useEffect } from "react";
+import { useReadContract } from "@starknet-react/core";
 
 interface TokenInputProps {
   value: string;
@@ -75,26 +76,29 @@ export default function SwapInterface() {
   const [amount, setAmount] = useState("");
   const [balance, setBalance] = useState<string | null>(null);
   const { address } = useAccount();
-  const { contract } = useContract({ address: CONTRACT_ADDRESS, abi: ABI });
+
+  const { data: balanceData } = useReadContract({
+    functionName: "balance_of",
+    args: [address],
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    watch: true
+  });
+
+  const { data: decimalsData } = useReadContract({
+    functionName: "decimals",
+    args: [],
+    address: CONTRACT_ADDRESS,
+    abi: ABI
+  });
 
   useEffect(() => {
-    const fetchBalance = async () => {
-      if (!contract || !address) return;
-      
-      try {
-        const result = await contract.call("balance_of", [address]);
-        const decimalsResult = await contract.call("decimals");
-        const decimals = Number(decimalsResult.decimals);
-        const balanceValue = (Number(result.balance.toString()) / Math.pow(10, decimals)).toString();
-        setBalance(balanceValue);
-      } catch (error) {
-        console.error("Error fetching balance:", error);
-        setBalance(null);
-      }
-    };
-
-    fetchBalance();
-  }, [contract, address]);
+    if (balanceData && decimalsData) {
+      const decimals = Number(decimalsData.decimals);
+      const balanceValue = (Number(balanceData.balance.toString()) / Math.pow(10, decimals)).toString();
+      setBalance(balanceValue);
+    }
+  }, [balanceData, decimalsData]);
 
   const handleSwap = () => {
     setIsSelling(!isSelling);
