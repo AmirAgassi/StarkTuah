@@ -136,7 +136,7 @@ export default function ContractInfo() {
       </h2>
       <div className="text-[#7f8596]">
         <p>Contract Address: {CONTRACT_ADDRESS}</p>
-        <p>Total Supply: {totalSupply ?? "Loading..."} tokens</p>
+        <p>Total Supply: {totalSupply ?? "Loading..."} tokens </p>
       </div>
     </div>
   );
