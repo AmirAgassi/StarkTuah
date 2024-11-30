@@ -13,6 +13,7 @@ export default function Home() {
           Connect {connector.id}
         </button>
       ))}
+      
 
       <p>{address}</p>
     </div>
