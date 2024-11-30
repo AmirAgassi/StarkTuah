@@ -91,14 +91,19 @@ const TokenInput = ({
               MINT
             </button>
           )}
-          <button
-            className="text-xs text-[#7f8596] font-medium bg-[#2d2f3a] px-2 py-1 rounded-md 
-              hover:bg-[#3d3f4a] hover:text-white transition-all opacity-75 hover:opacity-100"
-            onClick={handleMaxClick}
-            disabled={!maxBalance}
-          >
-            MAX
-          </button>
+          <div className="relative">
+            <button
+              className="text-xs text-[#7f8596] font-medium bg-[#2d2f3a] px-2 py-1 rounded-md 
+                hover:bg-[#3d3f4a] hover:text-white transition-all opacity-75 hover:opacity-100"
+              onClick={handleMaxClick}
+              disabled={!maxBalance}
+            >
+              MAX
+            </button>
+            <div className="absolute -bottom-5 right-0 text-xs text-[#7f8596] font-['Roboto'] whitespace-nowrap">
+              BALANCE: {maxBalance || '0.00'}
+            </div>
+          </div>
         </div>
       </div>
       <div className="text-[#7f8596] text-sm mt-1">{usdValue}</div>
