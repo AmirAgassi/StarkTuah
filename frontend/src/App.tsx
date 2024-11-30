@@ -1,35 +1,78 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import { connect } from "starknetkit";
+import { Provider } from "starknet";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [connection, setConnection] = useState<any>();
+  const [provider, setProvider] = useState<Provider>();
+  const [address, setAddress] = useState("");
+
+  // connect wallet function
+  const connectWallet = async () => {
+    try {
+      const result = await connect();
+      
+      if (result && result.wallet) {
+        setConnection(result);
+        setProvider(result.wallet.provider);
+        setAddress(result.wallet.account.address);
+        console.log("Wallet connected!");
+        console.log("Address:", result.wallet.account.address);
+      } else {
+        console.log("User rejected wallet connection");
+      }
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+    }
+  };
+
+  // disconnect wallet function
+  const disconnectWallet = async () => {
+    try {
+      if (connection?.wallet) {
+        await connection.wallet.disconnect();
+      }
+      setConnection(undefined);
+      setProvider(undefined);
+      setAddress("");
+      console.log("Wallet disconnected!");
+    } catch (error) {
+      console.error("Error disconnecting wallet:", error);
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div style={{ padding: '20px', textAlign: 'center' }}>
+      {!connection?.wallet ? (
+        <button 
+          onClick={connectWallet}
+          style={{
+            padding: '10px 20px',
+            fontSize: '16px',
+            cursor: 'pointer'
+          }}
+        >
+          Connect Wallet
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      ) : (
+        <div>
+          <h3>Wallet Connected!</h3>
+          <p>Address: {address}</p>
+          <button 
+            onClick={disconnectWallet}
+            style={{
+              padding: '10px 20px',
+              fontSize: '16px',
+              cursor: 'pointer',
+              marginTop: '10px'
+            }}
+          >
+            Disconnect
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;
