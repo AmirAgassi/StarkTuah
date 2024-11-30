@@ -94,7 +94,8 @@ export default function SwapInterface() {
   const [amount, setAmount] = useState("");
   const [balance, setBalance] = useState<string | null>(null);
   const { address } = useAccount();
-  const contract = useContract({ address: CONTRACT_ADDRESS, abi: ABI });
+  const tuahContract = useContract({ address: CONTRACT_ADDRESS, abi: ABI });
+  const usdcContract = useContract({ address: USDC_ADDRESS, abi: ABI });
 
   const { data: balanceData } = useReadContract({
     functionName: "balance_of",
@@ -118,13 +119,23 @@ export default function SwapInterface() {
     abi: ABI,
   });
 
+    const { send: sendMintUSDC, error: errorMintUSDC } = useSendTransaction({
+      calls:
+        usdcContract?.contract && address
+          ? [usdcContract.contract.populate("mint", [100n * (10n ** 18n)])]
+          : undefined,
+    });
+
   console.log(allowanceData);
-  const { send, error } = useSendTransaction({
+
+  const { send: sendMintTuah, error: errorMintTuah } = useSendTransaction({
     calls:
-      contract?.contract && address
-        ? [contract.contract.populate("mint", [amount])]
+      tuahContract?.contract && address
+        ? [tuahContract.contract.populate("mint", [amount])]
         : undefined,
   });
+
+
   useEffect(() => {
     if (balanceData && decimalsData) {
       const decimals = Number(decimalsData.decimals);
@@ -141,7 +152,7 @@ export default function SwapInterface() {
 
   const handleSwapAction = async () => {
     if (!isSelling && amount) {
-      send();
+      sendMintTuah();
     }
   };
 
