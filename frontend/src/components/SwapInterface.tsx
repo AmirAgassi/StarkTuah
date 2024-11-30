@@ -285,7 +285,7 @@ export default function SwapInterface() {
               value={amount}
               onChange={setAmount}
               token={isSelling ? "USDTuah" : "USDC"}
-              label={isSelling ? "Buy" : "Sell"}
+              label="Sell"
               isTopInput={true}
               maxBalance={isSelling ? balance : usdcBalance}
               onMint={handleMintUSDC}
@@ -294,7 +294,7 @@ export default function SwapInterface() {
               value={amount}
               onChange={setAmount}
               token={isSelling ? "USDC" : "USDTuah"}
-              label={isSelling ? "Sell" : "Buy"}
+              label="Buy"
               maxBalance={!isSelling ? balance : usdcBalance}
               onMint={handleMintUSDC}
             />
