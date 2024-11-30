@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-900">
       <Navbar />
-      <main className="container mx-auto px-6 pt-20">
+      <main className="container mx-auto px-6 pt-20 mt-16">
         <SwapInterface />
       </main>
     </div>
