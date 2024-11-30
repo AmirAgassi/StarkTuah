@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import { InjectedConnector } from "starknetkit/injected";
 import { ArgentMobileConnector } from "starknetkit/argentMobile";
 import { WebWalletConnector } from "starknetkit/webwallet";
-import { mainnet, sepolia } from "@starknet-react/chains";
+import { Chain, mainnet, sepolia } from "@starknet-react/chains";
 import { Connector, StarknetConfig, jsonRpcProvider } from "@starknet-react/core";
 import App from "./App.tsx";
 
