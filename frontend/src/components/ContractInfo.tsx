@@ -1,7 +1,8 @@
 import { useReadContract } from "@starknet-react/core";
 import { useState, useEffect } from "react";
 
-export const CONTRACT_ADDRESS = "0x0771c943ac94b6778c0d7f8cbe1aa12962161cd40bcc37e8d5c45bb54625ce78";
+export const CONTRACT_ADDRESS =
+  "0x0771c943ac94b6778c0d7f8cbe1aa12962161cd40bcc37e8d5c45bb54625ce78";
 
 // abi for total supply and decimals query
 export const ABI = [
@@ -59,8 +60,8 @@ export const ABI = [
   {
     name: "mint",
     type: "function",
-    inputs: [{ name: "amount", type: "felt" }],
-    outputs: [{ name: "success", type: "felt" }],
+    inputs: [{ name: "amount", type: "core::integer::u256" }],
+    outputs: [],
     state_mutability: "external",
   },
   {
@@ -92,7 +93,6 @@ export const ABI = [
   },
 ] as const;
 
-
 export default function ContractInfo() {
   const [totalSupply, setTotalSupply] = useState<string | null>(null);
 
@@ -100,23 +100,25 @@ export default function ContractInfo() {
     functionName: "decimals",
     args: [],
     address: CONTRACT_ADDRESS,
-    abi: ABI
+    abi: ABI,
   });
 
   const { data: supplyData } = useReadContract({
     functionName: "total_supply",
     args: [],
     address: CONTRACT_ADDRESS,
-    abi: ABI
+    abi: ABI,
   });
 
   useEffect(() => {
     if (decimalsData && supplyData) {
       const decimalValue = Number(decimalsData.decimals);
       const supply = supplyData.total_supply;
-      
+
       if (supply) {
-        const formattedSupply = (Number(supply.toString()) / Math.pow(10, decimalValue)).toLocaleString();
+        const formattedSupply = (
+          Number(supply.toString()) / Math.pow(10, decimalValue)
+        ).toLocaleString();
         setTotalSupply(formattedSupply);
       } else {
         setTotalSupply("0");
@@ -126,7 +128,9 @@ export default function ContractInfo() {
 
   return (
     <div className="bg-[#1a1b23] p-4 rounded-lg border border-gray-600 mb-4">
-      <h2 className="text-lg font-medium text-white mb-2">Contract Information</h2>
+      <h2 className="text-lg font-medium text-white mb-2">
+        Contract Information
+      </h2>
       <div className="text-[#7f8596]">
         <p>Contract Address: {CONTRACT_ADDRESS}</p>
         <p>Total Supply: {totalSupply ?? "Loading..."} tokens</p>
