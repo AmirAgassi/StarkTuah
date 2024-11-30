@@ -59,7 +59,7 @@ X, y = create_sequences(scaled_prices, seq_length)
 X = torch.tensor(X, dtype=torch.float32)
 y = torch.tensor(y, dtype=torch.float32)
 
-# Step 3: Define and Train an LSTM Model
+# Define and Train an LSTM Model
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(LSTMModel, self).__init__()
@@ -86,19 +86,23 @@ for epoch in range(epochs):
     if (epoch + 1) % 10 == 0:
         print(f"Epoch {epoch+1}/{epochs}, Loss: {loss.item()}")
 
-# Step 4: Export the Model to ONNX
+# Export the Model to ONNX
 onnx_path = "price_prediction.onnx"
 dummy_input = torch.randn(1, seq_length, 1)  # Shape: (batch_size, seq_length, input_size)
 torch.onnx.export(model, dummy_input, onnx_path, input_names=["input"], output_names=["output"])
 
 print(f"Model exported to {onnx_path}")
 
-# Step 5: Use Giza to Deploy Model on Starknet
+# Use Giza to Deploy Model on Starknet
 # Assuming Giza is set up, use the CLI for preprocessing:
 # 1. Preprocess the ONNX model for Cairo
 #    $ python giza.py preprocess --model price_prediction.onnx --output_dir ./cairo_model
+# - alternate giza cli
+# $ giza preprocess --model your_model.onnx --output_dir ./cairo_model
 # 2. Deploy the generated Cairo contract to Starknet
 #    $ starknet deploy --network testnet --contract ./cairo_model/model.cairo
 # 3. Generate proof for new inputs
 #    $ python giza.py proof --model price_prediction.onnx --input ./input.json --output ./proof.json
+# - alternate giza cli
+# # giza proof --model your_model.onnx --input input.json --output proof.json
 # 4. Verify the proof on-chain using Starknet CLI
