@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useContract, useAccount } from "@starknet-react/core";
+import { ABI, CONTRACT_ADDRESS } from "./ContractInfo";
+import { useState, useEffect } from "react";
 
 interface TokenInputProps {
   value: string;
@@ -6,9 +8,10 @@ interface TokenInputProps {
   token: string;
   label: string;
   isTopInput?: boolean;
+  maxBalance?: string;
 }
 
-const TokenInput = ({ value, onChange, token, label, isTopInput = false }: TokenInputProps) => {
+const TokenInput = ({ value, onChange, token, label, isTopInput = false, maxBalance }: TokenInputProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     // only allow non-negative numbers with up to 6 decimal places
@@ -22,6 +25,12 @@ const TokenInput = ({ value, onChange, token, label, isTopInput = false }: Token
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   })}` : "$0.00";
+
+  const handleMaxClick = () => {
+    if (maxBalance) {
+      onChange(maxBalance);
+    }
+  };
 
   return (
     <div className={`bg-[#1a1b23] p-4 rounded-lg border border-gray-600
@@ -48,7 +57,8 @@ const TokenInput = ({ value, onChange, token, label, isTopInput = false }: Token
         <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button 
             className="text-xs text-[#7f8596] font-medium bg-[#2d2f3a] px-2 py-1 rounded-md hover:bg-[#3d3f4a]"
-            onClick={() => onChange("1000")} // Set a default MAX value
+            onClick={handleMaxClick}
+            disabled={!maxBalance}
           >
             MAX
           </button>
@@ -62,6 +72,28 @@ const TokenInput = ({ value, onChange, token, label, isTopInput = false }: Token
 export default function SwapInterface() {
   const [isSelling, setIsSelling] = useState(true);
   const [amount, setAmount] = useState("");
+  const [balance, setBalance] = useState<string | null>(null);
+  const { address } = useAccount();
+  const { contract } = useContract({ address: CONTRACT_ADDRESS, abi: ABI });
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      if (!contract || !address) return;
+      
+      try {
+        const result = await contract.call("balance_of", [address]);
+        const decimalsResult = await contract.call("decimals");
+        const decimals = Number(decimalsResult.decimals);
+        const balanceValue = (Number(result.balance.toString()) / Math.pow(10, decimals)).toString();
+        setBalance(balanceValue);
+      } catch (error) {
+        console.error("Error fetching balance:", error);
+        setBalance(null);
+      }
+    };
+
+    fetchBalance();
+  }, [contract, address]);
 
   const handleSwap = () => {
     setIsSelling(!isSelling);
@@ -84,12 +116,14 @@ export default function SwapInterface() {
             token={isSelling ? "USDTuah" : "USDC"}
             label={isSelling ? "Buy" : "Sell"}
             isTopInput={true}
+            maxBalance={isSelling ? balance : undefined}
           />
           <TokenInput
             value={amount}
             onChange={setAmount}
             token={isSelling ? "USDC" : "USDTuah"}
             label={isSelling ? "Sell" : "Buy"}
+            maxBalance={!isSelling ? balance : undefined}
           />
         </div>
 
