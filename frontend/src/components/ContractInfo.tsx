@@ -10,43 +10,88 @@ export const ABI = [
     type: "function",
     inputs: [],
     outputs: [{ name: "total_supply", type: "felt" }],
-    state_mutability: "view"
+    state_mutability: "view",
   },
   {
     name: "decimals",
     type: "function",
     inputs: [],
     outputs: [{ name: "decimals", type: "felt" }],
-    state_mutability: "view"
+    state_mutability: "view",
   },
   {
     name: "balance_of",
     type: "function",
     inputs: [{ name: "account", type: "felt" }],
     outputs: [{ name: "balance", type: "felt" }],
-    state_mutability: "view"
+    state_mutability: "view",
   },
   {
     name: "transfer",
     type: "function",
     inputs: [
       { name: "recipient", type: "felt" },
-      { name: "amount", type: "felt" }
+      { name: "amount", type: "felt" },
     ],
     outputs: [{ name: "success", type: "felt" }],
-    state_mutability: "external"
+    state_mutability: "external",
   },
   {
     name: "approve",
     type: "function",
     inputs: [
       { name: "spender", type: "felt" },
-      { name: "amount", type: "felt" }
+      { name: "amount", type: "felt" },
     ],
     outputs: [{ name: "success", type: "felt" }],
-    state_mutability: "external"
-  }
+    state_mutability: "external",
+  },
+  {
+    name: "allowance",
+    type: "function",
+    inputs: [
+      { name: "owner", type: "felt" },
+      { name: "spender", type: "felt" },
+    ],
+    outputs: [{ name: "remaining", type: "felt" }],
+    state_mutability: "view",
+  },
+  {
+    name: "mint",
+    type: "function",
+    inputs: [{ name: "amount", type: "felt" }],
+    outputs: [{ name: "success", type: "felt" }],
+    state_mutability: "external",
+  },
+  {
+    name: "burn",
+    type: "function",
+    inputs: [{ name: "amount", type: "felt" }],
+    outputs: [{ name: "success", type: "felt" }],
+    state_mutability: "external",
+  },
+  {
+    name: "constructor",
+    type: "constructor",
+    inputs: [
+      { name: "initial_supply", type: "felt" },
+      { name: "recipient", type: "felt" },
+    ],
+    outputs: [],
+  },
+  {
+    name: "transfer_from",
+    type: "function",
+    inputs: [
+      { name: "sender", type: "felt" },
+      { name: "recipient", type: "felt" },
+      { name: "amount", type: "felt" },
+    ],
+    outputs: [{ name: "success", type: "felt" }],
+    state_mutability: "external",
+  },
 ] as const;
+
 
 export default function ContractInfo() {
   const [totalSupply, setTotalSupply] = useState<string | null>(null);
