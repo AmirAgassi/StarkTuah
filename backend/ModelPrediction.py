@@ -6,18 +6,25 @@ import torch.nn as nn
 import torch.onnx
 from sklearn.preprocessing import MinMaxScaler
 from dotenv import load_dotenv
+from datetime import datetime, timedelta
+import os
 
 load_dotenv()
+
+#date range
+time_end = datetime.utcnow()
+time_start = time_end - timedelta(days=7)
 
 # Fetch data from pro market cap
 def fetch_historical_data(COINMARKETCAP, symbol="BTC", days=100):
     url = f"https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/historical"
     headers = {"X-CMC_PRO_API_KEY": COINMARKETCAP}
     params = {
-        "symbol": symbol,
-        "convert": "USD",
-        "time_start": (pd.Timestamp.now() - pd.Timedelta(days=days)).strftime("%Y-%m-%d"),
-        "time_end": pd.Timestamp.now().strftime("%Y-%m-%d"),
+    "symbol": "BTC,ETH,BNB",  # bit coin, eth, 
+    "time_start": time_start.isoformat(),
+    "time_end": time_end.isoformat(),
+    "interval": "1h", 
+    "convert": "USD"
     }
     
     response = requests.get(url, headers=headers, params=params)
